@@ -3,6 +3,7 @@ import logging
 import streamlit as st
 import openai
 import ollama
+from gtts import gTTS
 import chromadb
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -124,6 +125,11 @@ def clear_db():
         client.delete_collection(name=collection.name)
     print("All collections have been cleared.")
 
+def text_to_speech(text, lang='en'):
+    tts = gTTS(text=text, lang=lang)
+    audio_path = "response.mp3"
+    tts.save(audio_path)
+    return audio_path
 
 # clear_db()
 
@@ -135,14 +141,16 @@ def clear_db():
 
 all_stm_summary = ""
 stm = ""
-# Title
+
+
+# Streamlit UI
 st.title("MindMend: Your Emergency Therapist")
 
 # Initialize session state for storing chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Input field
+# Input field for user question
 question = st.text_input("Enter your question:")
 
 # Handle button press
@@ -151,13 +159,21 @@ if st.button("Send"):
         with st.spinner("Processing..."):
             start_time = time.time()
 
-            # Simulate RAG response (replace with `perform_RAG(question)`)
+            # Get the response (replace with your RAG model call)
             response = perform_RAG(question)
             st.text_area("Answer", value=response, height=200, disabled=True) 
 
             # Add user question and AI response to the chat history
             st.session_state.messages.append({"role": "user", "content": question})
             st.session_state.messages.append({"role": "ai", "content": response})
+
+            # Convert the AI response to audio and play it
+            audio_path = text_to_speech(response)
+            audio_file = open(audio_path, "rb")
+            st.audio(audio_file.read(), format="audio/mp3")
+
+            # Clean up the generated audio file
+            os.remove(audio_path)
 
             end_time = time.time()
             print("Total time: ", end_time - start_time)
@@ -168,8 +184,6 @@ for msg in st.session_state.messages:
         st.write(f"**You:** {msg['content']}")
     else:
         st.write(f"**MindMend:** {msg['content']}")
-
-
 
 
 
