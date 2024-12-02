@@ -1,4 +1,6 @@
 import os
+import logging
+import streamlit as st
 import openai
 import ollama
 import chromadb
@@ -13,7 +15,7 @@ start_time = time.time()
 ollama_client = openai.Client(base_url="http://127.0.0.1:11434/v1", api_key="EMPTY")
 
 # Directory containing PDF files
-DATA_PATH = r"test-data"
+DATA_PATH = r"Data/All"
 COLLECTION_NAME = "docs"
 CHROMA_DB_PATH = "chromadb"
 
@@ -26,6 +28,8 @@ def init_chroma_client():
         database=DEFAULT_DATABASE,
     )
 
+
+# Load documents from PDFs
 
 def load_documents():
     if not os.path.exists(DATA_PATH):
@@ -48,7 +52,6 @@ def load_documents():
     if not documents:
         raise ValueError("No documents were loaded.")
     return documents
-
 
 
 # Split documents into chunks
@@ -108,8 +111,9 @@ def perform_RAG(prompt):
 
     # Combine results and generate response
     combined_data = "\n\n".join(results["documents"][0])
-    final_prompt = f"Using this data: {combined_data}. Respond to this prompt: {prompt}"
-    output = ollama.generate(model="qwen2:latest", prompt=final_prompt)
+    final_prompt = f'''You are a experienced therapist.Use this data to understand how expert therapists
+     handle such situations: {combined_data}. Respond to this prompt: {prompt}. Dont use the examples directly but take inspiration from them to respond'''
+    output = ollama.generate(model="llama3.2", prompt=final_prompt)
     return output.get("response", "No response generated.")
 
 
@@ -121,10 +125,86 @@ def clear_db():
     print("All collections have been cleared.")
 
 
-# Example Usage
-clear_db()
-response = perform_RAG("SHould alice be scolded?")
-print(response)
-end_time = time.time()
+# clear_db()
 
-print("Total time: ", end_time-start_time)
+# TODO : ONBOARDING
+
+
+# TODO : STORING VARIABLES LIKE SOS CONTACT AND DOCTORS EMAIL TO DISK!
+
+
+all_stm_summary = ""
+stm = ""
+# Title
+st.title("MindMend: Your Emergency Therapist")
+
+# Initialize session state for storing chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Input field
+question = st.text_input("Enter your question:")
+
+# Handle button press
+if st.button("Send"):
+    if question.strip():
+        with st.spinner("Processing..."):
+            start_time = time.time()
+
+            # Simulate RAG response (replace with `perform_RAG(question)`)
+            response = perform_RAG(question)
+            st.text_area("Answer", value=response, height=200, disabled=True) 
+
+            # Add user question and AI response to the chat history
+            st.session_state.messages.append({"role": "user", "content": question})
+            st.session_state.messages.append({"role": "ai", "content": response})
+
+            end_time = time.time()
+            print("Total time: ", end_time - start_time)
+
+# Display chat history
+for msg in st.session_state.messages:
+    if msg["role"] == "user":
+        st.write(f"**You:** {msg['content']}")
+    else:
+        st.write(f"**MindMend:** {msg['content']}")
+
+
+
+
+
+        # answer = process_input(question + all_stm_summary) # add context prompts properly
+        # TODO : For each questions see if its an emergency : SOS calling API
+
+        # TODO : improve prompt!!!
+#         stm = f'''
+#         question by patient: {question}
+#         ansewr by LLM therapist : {answer}
+#         '''
+#         # TODO # improve prompt
+#         stm_summary = invoke_LLM(f"""Summarize this {stm} in a few lines. maximum 4-5. Retain important and notable points. Also capture the sentiment of the question.""")
+#         # TODO : check if one more level of summarization is required!!!
+#         all_stm_summary += stm_summary
+#         st.text_area("Answer", value=answer, height=300, disabled=True) 
+
+# if st.button('End Chat'):
+#     # TODO: Ask finally are you Okay, if not: call SOS, add in email that patient wasnt okay even after the chat.
+    
+#     # create LTM and save
+#     # extract old LTM and add new
+#     # one more summarization round
+#     file_path = "memory/LTM.txt"
+#     with open(file_path, "r") as file:
+#         content = file.read()
+
+#     # TODO : improve prompt!!!
+#     LTM_summary = invoke_LLM(f'''Create a summary in maximum 20 lines of {content} and {all_stm_summary}''')
+    
+#     content += LTM_summary
+
+#     with open(file_path, "w") as file:
+#         file.write(content)
+
+#     # TODO : STM summary to doctor + tell end of the chat
+
+    

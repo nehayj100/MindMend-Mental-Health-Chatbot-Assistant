@@ -1,0 +1,63 @@
+# how to store short term and logn term memory
+
+# Data Pre-Procesing 
+
+# implement graphrag and get relationships
+    # use light RAG
+    # use neo4j to get the graph and show it in report!!
+
+# short term:  
+    # after each question-answer pair- invoke LLM to summarize the Q/A and addin context of next question
+    # like we have a previous variable in loops
+    # store this summary in a file progressively : Short time memory-all file
+# long term
+    # summarize : store this summary in a file progressively as long term memory
+    # if 10 entries for LTM already present- replace the first one with this new summary
+
+# onboarding
+    # if variables like sos etc are not set- UI for onboarding: taht saves SOS, email of doctor etc in our files
+
+# twillio:
+    # call if any emergency sensed
+    # for each input message: see sentiment and check for emergeency
+
+# graphRAG: 
+    # what level summary to return based on question
+    # chage the parameters to get good and quick response
+    # do you need lightRAG : depends on speed
+
+# store as apks
+
+# prompt engineering
+    # use chain of thought 
+    # use few shot examples
+
+# make UI very beautiful
+
+# check what is retreived in each question 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## most imp: NORMAL CHATBOTS ARE NOT IN TERMS OF MEMORY- THEY CONSIDER ONLY PREVIOUS MESSAGE
+    ## MAINTAIN A SHORT TERM MEMORY ON CHAT level
+    ## LONG TERM MEMORY WOULD BE A CHAT SUMMARY SAVED FOR LAST 10 CHATS
+
+1. Use graph RAG
+2. Streamline deployment is a must
+3. Onboarding the new user with SOS contacts etc :: create UI for this
+4. Answer in natural voice
+    1. Whisper for audio transcription 
+5. Question in voice of user- can detect sentiments
+6. Agent- send emails to Doctor, calls 911, SOS, doctor in emergency
+7.  give previous sessions transcriptions to LLM
+8. Eval metrics: saved a post on linkedin
+9. Create summary and send to doctor
+10. Onboard- save variables to call etc
+11. Call emergency on the users behalf
+12. Evaluate properly- add graphs 
+13. Change prompts to improve graph RAG??!!
+14. Explore levels of answer
+15. Chatbot is ok-available but you have an agent that can call, email, send summary to doctor etc etc- that is novel!!!
+
+- for report- design decisions reagarding usingopenAI api key or ollama throughout?
+- whisper >>>>> ffmeg!!! : show comparisons
+- kloght rag- free and fast!!!
