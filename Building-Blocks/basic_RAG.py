@@ -2,125 +2,129 @@ import os
 import openai
 import ollama
 import chromadb
-from langchain_community.document_loaders import PyPDFDirectoryLoader  # Importing PDF loader from Langchain
-from langchain.text_splitter import RecursiveCharacterTextSplitter  # Importing text splitter from Langchain
-from langchain.schema import Document  # Importing Document schema from Langchain
+from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from chromadb.config import Settings, DEFAULT_TENANT, DEFAULT_DATABASE
+import time
+from langchain.schema import Document
 
-
+start_time = time.time()
 # Initialize Ollama client
 ollama_client = openai.Client(base_url="http://127.0.0.1:11434/v1", api_key="EMPTY")
 
 # Directory containing PDF files
 DATA_PATH = r"test-data"
+COLLECTION_NAME = "docs"
+CHROMA_DB_PATH = "chromadb"
+
+# Helper to initialize ChromaDB client
+def init_chroma_client():
+    return chromadb.PersistentClient(
+        path=CHROMA_DB_PATH,
+        settings=Settings(),
+        tenant=DEFAULT_TENANT,
+        database=DEFAULT_DATABASE,
+    )
+
 
 def load_documents():
     if not os.path.exists(DATA_PATH):
         raise FileNotFoundError(f"Directory does not exist: {DATA_PATH}")
     if not os.listdir(DATA_PATH):
         raise FileNotFoundError(f"No files found in the directory: {DATA_PATH}")
+
+    documents = []
+    for filename in os.listdir(DATA_PATH):
+        if filename.startswith("."):  # Skip hidden files like .DS_Store
+            continue
+        filepath = os.path.join(DATA_PATH, filename)
+        if filename.endswith(".txt"):  # Process only text files
+            with open(filepath, "r", encoding="utf-8") as file:
+                # Create a Document object instead of a dictionary
+                documents.append(Document(page_content=file.read(), metadata={"source": filename}))
+        else:
+            raise ValueError(f"Unsupported file format: {filename}")
     
-    document_loader = PyPDFDirectoryLoader(DATA_PATH)
-    documents = document_loader.load()
     if not documents:
-        raise ValueError("Document loading failed. No documents were loaded.")
-    
-    print(f"Loaded {len(documents)} documents.")
+        raise ValueError("No documents were loaded.")
     return documents
 
 
-def split_text(documents: list[Document]):
+
+# Split documents into chunks
+def split_text(documents):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,  # Chunk size in characters
-        chunk_overlap=100,  # Overlap between consecutive chunks
-        length_function=len,  # Function to compute text length
-        add_start_index=True,  # Add start index metadata
+        chunk_size=400,
+        chunk_overlap=100,
+        length_function=len,
+        add_start_index=True,
     )
-
-    chunks = text_splitter.split_documents(documents)
-
-    if len(chunks) <= 10:
-        raise ValueError(f"Not enough chunks. Found only {len(chunks)} chunks.")
-    return chunks
+    return text_splitter.split_documents(documents)
 
 
+# Generate embeddings in batch
+def generate_embeddings(text_chunks):
+    embeddings = []
+    for chunk in text_chunks:
+        response = ollama.embeddings(model="llama3.2", prompt=chunk.page_content)
+        if "embedding" not in response:
+            raise ValueError(f"Embedding generation failed for chunk: {chunk.page_content}")
+        embeddings.append((chunk.page_content, response["embedding"]))
+    return embeddings
+
+
+# Perform RAG
 def perform_RAG(prompt):
-    # Initialize ChromaDB Persistent Client
-    rag_client = chromadb.PersistentClient(
-        path="chromadb",
-        settings=Settings(),
-        tenant=DEFAULT_TENANT,
-        database=DEFAULT_DATABASE,
-    )
+    client = init_chroma_client()
 
-    # Define collection name
-    collection_name = "docs"
-
+    # Try loading existing collection
     try:
-        collection = rag_client.get_collection(name=collection_name)
-        print(f"Collection '{collection_name}' loaded successfully.")
+        collection = client.get_collection(name=COLLECTION_NAME)
     except Exception:
-        print(f"Collection '{collection_name}' not found. Creating a new one.")
-        collection = rag_client.create_collection(name=collection_name)
+        # Create collection if not exists
+        collection = client.create_collection(name=COLLECTION_NAME)
 
         # Load and process documents
         documents = load_documents()
         chunks = split_text(documents)
 
-        # Store each chunk in the vector database
-        for i, chunk in enumerate(chunks):
-            response = ollama.embeddings(model="llama3.2", prompt=chunk.page_content)
-            if "embedding" not in response:
-                raise ValueError(f"Embedding generation failed for chunk: {chunk.page_content}")
-            collection.add(
-                ids=[str(i)],
-                embeddings=[response["embedding"]],
-                documents=[chunk.page_content],
-            )
+        # Batch generate and add embeddings
+        embeddings = generate_embeddings(chunks)
+        collection.add(
+            ids=[str(i) for i in range(len(embeddings))],
+            embeddings=[embed[1] for embed in embeddings],
+            documents=[embed[0] for embed in embeddings],
+        )
 
-    # Generate embedding for the user prompt
-    embedding_response = ollama.embeddings(prompt=prompt, model="llama3.2")
-    if "embedding" not in embedding_response:
-        raise ValueError(f"Embedding generation failed for the prompt: {prompt}")
-    embedding = embedding_response["embedding"]
+    # Generate prompt embedding
+    prompt_embedding = ollama.embeddings(model="llama3.2", prompt=prompt)
+    if "embedding" not in prompt_embedding:
+        raise ValueError("Embedding generation failed for the prompt.")
+    
+    # Query the database
+    results = collection.query(query_embeddings=[prompt_embedding["embedding"]], n_results=5)
+    if not results["documents"][0]:
+        raise ValueError("No results found.")
 
-    # Query the collection
-    results = collection.query(query_embeddings=[embedding], n_results=5)
-    if len(results["documents"][0]) < 5:
-        raise ValueError("Insufficient results from the query.")
-
-    # Combine retrieved data
-    combined_data = "\n\n".join(results["documents"][0][:5])
+    # Combine results and generate response
+    combined_data = "\n\n".join(results["documents"][0])
     final_prompt = f"Using this data: {combined_data}. Respond to this prompt: {prompt}"
-
-    # print(f"Final prompt sent to Ollama:\n{final_prompt}")
-
-    # Generate the final response
-    output = ollama.generate(model="llama3.2", prompt=final_prompt)
-    if "response" not in output:
-        raise ValueError("Failed to generate response from Ollama.")
-
-    # print(f"Response:\n{output['response']}")
-    return output["response"]
+    output = ollama.generate(model="qwen2:latest", prompt=final_prompt)
+    return output.get("response", "No response generated.")
 
 
+# Clear database
 def clear_db():
-    # Initialize ChromaDB Persistent Client
-    client = chromadb.PersistentClient(
-        path="chromadb",
-        settings=Settings(),
-        tenant=DEFAULT_TENANT,
-        database=DEFAULT_DATABASE,
-    )
-
-    # Delete all collections
-    collections = client.list_collections()
-    for collection in collections:
+    client = init_chroma_client()
+    for collection in client.list_collections():
         client.delete_collection(name=collection.name)
     print("All collections have been cleared.")
 
 
-# Clear database and run Retrieval-Augmented Generation
-# clear_db()
-response = perform_RAG("where is alice?")
+# Example Usage
+clear_db()
+response = perform_RAG("SHould alice be scolded?")
 print(response)
+end_time = time.time()
+
+print("Total time: ", end_time-start_time)
