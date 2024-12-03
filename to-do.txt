@@ -36,6 +36,8 @@
 
 # check what is retreived in each question 
 
+# landing page with all tabs and goto landing page after end chat!!!!
+
 # code eval loop!! should be very impressive- publication level charts!
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
