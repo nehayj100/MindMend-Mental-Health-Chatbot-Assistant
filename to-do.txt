@@ -1,3 +1,22 @@
+Next steps:
+
+# Research on Prompt engineering
+    # doest ALWAYS use the retreived Data
+    # NEVER SPEAKS NEGATIVE
+        # think about a novel solution
+    # calls SOS when needed
+    # suggests links and resources (internal/external)
+
+# add proper resources on home page!!!
+
+# check what is retreived in each question 
+
+
+
+
+
+
+-----------------------
 # how to store short term and logn term memory
 
 # Data Pre-Procesing 
