@@ -35,6 +35,8 @@
 # make UI very beautiful
 
 # check what is retreived in each question 
+
+# code eval loop!! should be very impressive- publication level charts!
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## most imp: NORMAL CHATBOTS ARE NOT IN TERMS OF MEMORY- THEY CONSIDER ONLY PREVIOUS MESSAGE
