@@ -350,8 +350,11 @@ with tabs[1]:
         # Button to trigger the function
         if st.button("Submit"):
             save_onboarding_info(user_full_name, doctor_name, doctor_email, sos_contact_name, sos_contact_number, user_contact_number)
-            st.session_state.page = "confirmation"  # Set page to confirmation
-        # TODO : needs 2 clicks
+            st.write("All details saved.")
+            print("All details saved.")
+            st.session_state.page = "confirmation"  # Set page to confirmation after submitting the form
+            st.rerun()  # Refresh the page to show confirmation page
+
     # Confirmation page
     elif st.session_state.page == "confirmation":
         st.write("All details saved.")
@@ -359,6 +362,7 @@ with tabs[1]:
         # Button to go back to the form page for editing details
         if st.button("Edit Details"):
             st.session_state.page = "form"
+            st.rerun()  # Refresh the page to go back to the form page
 
 
 # Chat Tab
