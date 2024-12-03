@@ -31,16 +31,33 @@ CHROMA_DB_PATH = "chromadb"
 stop = ['Observation:', 'Observation ']
 
 
-doctor_email_file_path = "onboarding-details/doctors-email.txt"
+doctor_email_path = "onboarding-details/doctors-email.txt"
 user_fullname_path = "onboarding-details/user-full-name.txt"
+doctor_name_path = "onboarding-details/doctor-name.txt"
+sos_contact_name_path = "onboarding-details/sos-contact-name.txt"
+sos_contact_number_path = "onboarding-details/sos-contact-number.txt"
+
+# user_full_name,doctor_name, doctor_email, sos_contact_name, sos_contact_number
 
 with open(user_fullname_path, 'r') as file:
     user_full_name = file.read()
 
+with open(doctor_name_path, 'r') as file:
+    doctor_name_path = file.read()
+
+with open(doctor_email_path, 'r') as file:
+    doctor_email = file.read()
+
+with open(sos_contact_name_path, 'r') as file:
+    sos_contact_name = file.read()
+
+with open(sos_contact_name_path, 'r') as file:
+    sos_contact_name = file.read()
+
 password_path = "confidential/email_pass.txt"
 # Open and read the file for email password
-with open(password_path, 'r') as file:
-    passkey = file.read()  # Read the entire content of the file 
+with open(sos_contact_number_path, 'r') as file:
+    sos_contact_number = file.read()  # Read the entire content of the file 
 
 LTM_file_path = "memory/LTM.txt"
 # STM_file_path = "memory/STM.txt"
@@ -54,6 +71,8 @@ call_account_sid_path = "confidential/twillio_sid.txt"
 call_auth_token_path = "confidential/twillio_auth.txt"
 twilio_number_path = "confidential/twillio_num.txt"
 to_number_path = "confidential/sos_contact.txt"
+
+
 
 with open(call_account_sid_path, "r") as file:
     account_sid = file.read()
@@ -281,10 +300,19 @@ def emergency_calling():
     print(f"Call SID: {call.sid}")
     print(f"Call Status: {call.status}")
 
+def save_onboarding_info(user_full_name,doctor_name, doctor_email, sos_contact_name, sos_contact_number):
+    with open(user_fullname_path, 'w') as file:
+        file.write(user_full_name)
+    with open(doctor_name_path, 'w') as file:
+        file.write(doctor_name)
+    with open(doctor_email_path, 'w') as file:
+        file.write(doctor_email)
+    with open(sos_contact_name_path, 'w') as file:
+        file.write(sos_contact_name)
+    with open(sos_contact_number_path, 'w') as file:
+        file.write(sos_contact_number)
+
 # clear_db()
-
-# TODO : ONBOARDING
-
 
 
 # TODO : improve prompt!!!
@@ -293,23 +321,33 @@ all_stm_summary = ""
 stm = ""
 
 
-
-
 # Set the page config as the first Streamlit command
 st.set_page_config(page_title="MindMend : Let's talk!", layout="wide")
 
 # Onboarding and Chat Tabs using Streamlit tabs
-tabs = st.tabs(["Onboarding", "Chat"])
+tabs = st.tabs(["Chat", "Onboarding"])
 
 # Onboarding Tab
-with tabs[0]:
+with tabs[1]:
     st.title("Welcome to MindMend!")
     st.header("Onboarding Process")
     st.write("This is where we will guide you through the onboarding process.")
-    # Add more onboarding instructions or content here
+    
+    # Add 6 text boxes to get user information
+    user_full_name = st.text_input("Full Name")
+    doctor_name = st.text_input("Doctor's Name")
+    doctor_email = st.text_input("Doctor's Email")
+    sos_contact_name = st.text_input("SOS Contact Name")
+    sos_contact_number = st.text_input("SOS Contact Number")
+    
+    # Button to trigger the function
+    if st.button("Submit"):
+        save_onboarding_info(user_full_name,doctor_name, doctor_email, sos_contact_name, sos_contact_number)
+        print("Onboarding info saved to file!")
+
 
 # Chat Tab
-with tabs[1]:
+with tabs[0]:
     all_stm_summary = ""
     #invoke_llm(f'''Summarize this text in 5-6 lines. make sure to include all important points: {current_LTM}''')
     stm = ""
@@ -379,7 +417,7 @@ with tabs[1]:
         # TODO: Ask finally are you Okay, if not: call SOS, add in email that patient wasnt okay even after the chat.
         # udpate LTM in file
         # TODO : improve prompt!!!
-        # print(all_stm_summary)
+        
         print("----------------------------------------------------------")
         print(st.session_state.all_stm_summary)
         print("----------------------------------------------------------")
