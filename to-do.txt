@@ -3,7 +3,6 @@ Next steps:
         # check why response is cming in ""
 
 # 2 : add good data and re-run + optimize chunk size etc for RAG
-
 # 3 : add actiivties separately and tell the bot to suggest....!!!
 
 # 4 : Response when its an emerygency 
@@ -15,8 +14,8 @@ Next steps:
 # 6 : get apk
 ------
 # evaluation
-    # majority(you, llama, qwen)?
-    # precesion, recall
+    # for 100 questions : RAG based answer vs LLM invoked answer
+    # precesion, recall :: make and use benchmark for 25 questions 
     # average time to asnwer - 100 question loop
     # average 1-1 message delay across conversation!!
 
@@ -27,8 +26,13 @@ Next steps:
     # tell how you over-delivered compared to the proposal
     # tell to add your number as rn only 1 nuber access from twillio
     # tell how you ahve shadowed delays :)
-
+    # can start another chat session even after pressing end chat    
     # tell data pre-processing steps and document the code for yourslf
+    # saving chat history across sessions
+    # memory - my LLM based implementation
+    # mention about LightRAG and graphRAG
+    # onboardings
+
 # video
 
 -----------------------

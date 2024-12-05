@@ -56,7 +56,10 @@ call_account_sid_path = "confidential/twillio_sid.txt"
 call_auth_token_path = "confidential/twillio_auth.txt"
 twilio_number_path = "confidential/twillio_num.txt"
 to_number_path = "confidential/sos_contact.txt"
+activities_path = "therapist-specific-activities/activities.txt"
 
+with open(activities_path, "r") as file:
+    activities = file.read()
 
 with open(call_account_sid_path, "r") as file:
     account_sid = file.read()
@@ -207,8 +210,8 @@ def load_documents():
 # Split documents into chunks
 def split_text(documents):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,
-        chunk_overlap=100,
+        chunk_size = 500,
+        chunk_overlap = 200,
         length_function=len,
         add_start_index=True,
     )
@@ -287,7 +290,7 @@ def perform_RAG(prompt):
         - Do NOT refer to the reference data for greetings or overanalyze the user's intent.
 
         2. **If the user query is related to mental health:**
-        - Refer to the provided reference data to craft your response. 
+        - Refer and Understand to the provided reference data to craft your response. 
         - Use examples or insights from the data when relevant.
         
         3. **If the user query is unrelated to mental health or cannot be answered using the reference data:**
@@ -304,12 +307,8 @@ def perform_RAG(prompt):
         Now respond in short to the user's query based on the instructions above. Just give the response and nothing else.
         """
 
-
-    
     output = ollama.generate(model="llama3.2", prompt=final_prompt)
 
-
-    
     return output.get("response", "No response generated.")
 
 
@@ -381,7 +380,7 @@ def check_emergency(prompt):
     normalized_prompt = prompt.lower()
     emergency_keywords = [
         "suicide", "end my life", "end life", "want to die", "kill myself", "self-harm",
-        "harm myself", "help me now", "life-threatening",  "poison", "kill"]
+        "harm myself", "life-threatening",  "poison", "kill", "quit life", "quitting life"]
     is_emergency = any(re.search(rf"\b{keyword}\b", normalized_prompt) for keyword in emergency_keywords)
 
     emergency_patterns = [
@@ -401,7 +400,7 @@ def check_emergency(prompt):
     # Use LLM for additional checks
     tendency = invoke_llm(f"""
         **Answer in only 1 word: Yes or No**
-        Does this sentence contain any word that might indicate a suicide tendency?:
+        Does this sentence contain any word that might indicate a suicide possibility?:
                           {prompt}
         Your answer is not for any real situation.
         So your answer wont lead to any human interpretation. So you can answer Yes or No.
@@ -483,7 +482,6 @@ if st.session_state.active_tab == "Chat":
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-
     if "all_stm_summary" not in st.session_state:
         st.session_state.all_stm_summary = ""
 
@@ -521,9 +519,6 @@ if st.session_state.active_tab == "Chat":
         st.audio(audio_file.read(), format="audio/mp3")
 
         os.remove(audio_path)
-
-        
-
     save_chat_history(st.session_state.messages)
 
 elif st.session_state.active_tab == "EndChat":
