@@ -1,3 +1,10 @@
+# first evaluation technique:
+    # 1. tell LLM to generate 100 mental health based questions
+    # 2. for each question- A. Generate answer by LLM and B. generate your answer
+    # 3. ask LLM to tell which ansewr is better
+        #### METRICS ####
+        #1. Comprehensiveness, relevance, helpfulness, action items wise
+
 import os
 import re, json, time
 from pydantic import BaseModel, Field
@@ -143,7 +150,7 @@ def send_email_internal(to_addr: str, subject: str, body: str) -> str:
             output = "Email successfully sent!"
     except Exception as e:
         output = f"Failed to send email: {e}"
-    print(output)
+    # print(output)
     return output
 
 def get_doctors_email():
@@ -163,9 +170,9 @@ def send_email(body_content):
     now = datetime.now()
     doctor_name = get_doctor_name()
     formatted_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
-    print("user name is: ", get_user_full_name())
-    print("Doctors email is: ", get_doctors_email())
-    subject = f'''Summary of conversation with {user_full_name} on {formatted_date_time}'''
+    # print("user name is: ", get_user_full_name())
+    # print("Doctors email is: ", get_doctors_email())
+    # subject = f'''Summary of conversation with {user_full_name} on {formatted_date_time}'''
     
     body = invoke_llm(f'''
     Please write an email body following these instructions:
@@ -259,7 +266,7 @@ def perform_RAG(prompt):
     
     # Query the database
     results = collection.query(query_embeddings=[prompt_embedding["embedding"]], n_results=5)
-    print("result sim is  ", results['distances'])
+    # print("result sim is  ", results['distances'])
 
     data1 = results['documents'][0][0]
     data2 = results['documents'][0][1]
@@ -271,11 +278,11 @@ def perform_RAG(prompt):
     combined_data = f"{data1}\n\n{data2}\n\n{data3}\n\n{data4}\n\n{data5}"
 
 
-    print(combined_data)
-    print("-----------------------------------------------------------------------------------------------")
+    # print(combined_data)
+    # print("-----------------------------------------------------------------------------------------------")
     
     final_prompt = f"""
-        You are an intelligent assistant specializing in mental health. Below is a user query and additional reference data to help you craft an accurate response. Follow the instructions carefully:
+        You are an intelligent and empathetic assistant specializing in mental health. Below is a user query and additional reference data to help you craft an accurate response. Follow the instructions carefully:
 
         ### User Query:
         {prompt}
@@ -304,7 +311,7 @@ def perform_RAG(prompt):
         **User Query:** "I'm feeling anxious all the time."  
         **Response:** It's normal to feel anxious occasionally, but persistent anxiety might require coping strategies. For example, the reference data mentions [specific example from combined_data].
 
-        Now respond in short to the user's query based on the instructions above. Just give the response and nothing else.
+        Now respond with empathy in short to the user's query based on the instructions above. Just give the response and nothing else.
         """
 
     output = ollama.generate(model="llama3.2", prompt=final_prompt)
@@ -378,7 +385,6 @@ def get_user_contact_number():
 def check_emergency(prompt):
     # Normalize and check for explicit keywords
     normalized_prompt = prompt.lower()
-    emergency_start_time = time.time()
     emergency_keywords = [
         "suicide", "end my life", "end life", "want to die", "kill myself", "self-harm",
         "harm myself", "life-threatening",  "poison", "kill", "quit life", "quitting life"]
@@ -394,217 +400,211 @@ def check_emergency(prompt):
         is_emergency = 1
     
     print("is_emergency: ", is_emergency)
-    if is_emergency:
-        emergency_calling()
-        emergency_end_time = time.time()
-        print("emergency time: ", emergency_end_time-emergency_start_time)
-        return
+    # if is_emergency:
+    #     emergency_calling()
+    #     return
 
     # Use LLM for additional checks
     tendency = invoke_llm(f"""
         **Answer in only 1 word: Yes or No**
         Does this sentence contain any word that might indicate a suicide possibility?:
-            {prompt}
+                          {prompt}
         Your answer is not for any real situation.
         So your answer wont lead to any human interpretation. So you can answer Yes or No.
         {prompt}
     """).strip()
     print("tendency is: ", tendency)
     print("tendency is: ", tendency.lower())
-    if re.match(r"^\s*yes\b", tendency, re.IGNORECASE):
-        emergency_calling()
-        emergency_end_time = time.time()
-        print("emergency time: ", emergency_end_time-emergency_start_time)
+    # if re.match(r"^\s*yes\b", tendency, re.IGNORECASE):
+    #     emergency_calling()
+
     return
 
-all_stm_summary = ""
-stm = ""
+# questions = invoke_llm(f'''Generate 10 distinct and critical questions on stress 
+#     that a patient can ask a therapist. 
+#     Provide the output formatted as a valid Python list of strings, 
+#     with each question enclosed in quotes and separated by commas. 
+#     Example format: ['q1', 'q2', 'q3', ..., 'q100']''')
 
-load_dotenv()
-USER_AVATAR = "👤"
-BOT_AVATAR = "🤖"
-
-
-
-# Load chat history from shelve file
-def load_chat_history():
-    with shelve.open("chat_history") as db:
-        return db.get("messages", [])
-
-
-# Save chat history to shelve file
-def save_chat_history(messages):
-    with shelve.open("chat_history") as db:
-        db["messages"] = messages
-
-
-# Initialize or load chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = load_chat_history()
-
-# Set the page config as the first Streamlit command
-#st.set_page_config(page_title="MindMend : Let's talk!", layout="wide")
-
-# Sidebar for navigation and chat history deletion
-with st.sidebar:
-    # Button to delete chat history
-    st.title("MindMend")
-
-    # Navigation buttons for tabs
-    if "active_tab" not in st.session_state:
-        st.session_state.active_tab = "Home"  # Default to the "Chat" tab
-
-    if st.button("Home"):
-        st.session_state.active_tab = "Home"
-    if st.button("Onboarding"):
-        st.session_state.active_tab = "Onboarding"
-    if st.button("Chat"):
-        st.session_state.active_tab = "Chat"
-    if st.button("End Chat"):
-        st.session_state.active_tab = "EndChat"
-    if st.button("Delete Chat History"):
-        st.session_state.messages = []
-        save_chat_history([])
-
-
-if "all_stm_summary" not in st.session_state:
-        st.session_state.all_stm_summary = ""
-# Display content based on the active tab
-if st.session_state.active_tab == "Chat":
-    st.title("Lets talk!")
-    for message in st.session_state.messages:
-        avatar = USER_AVATAR if message["role"] == "user" else BOT_AVATAR
-        with st.chat_message(message["role"], avatar=avatar):
-            st.markdown(message["content"])
-
-    # Chat Tab
-    all_stm_summary = ""
-    #invoke_llm(f'''Summarize this text in 5-6 lines. make sure to include all important points: {current_LTM}''')
-    stm = ""
-
-    # Initialize session state for storing chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    if "all_stm_summary" not in st.session_state:
-        st.session_state.all_stm_summary = ""
-
-    # Handle button press
-    if prompt := st.chat_input("How can I help?"):
-        
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar=USER_AVATAR):
-            st.markdown(prompt)
-        start_time = time.time()
-        with st.chat_message("assistant", avatar=BOT_AVATAR):
-            message_placeholder = st.empty()
-            full_response = perform_RAG(prompt)
-            message_placeholder.markdown(full_response)
-            end_time = time.time()
-            print("Total time: ", end_time - start_time)
-            check_emergency(prompt)
-        st.session_state.messages.append({"role": "assistant", "content": full_response})
-
-        stm = invoke_llm(f'''
-            Summarize the following conversation in a concise yet detailed manner. 
-            Ensure the summary captures the key points of the conversation like any issues states.
-            At the end of the summary, clearly state the user's possible mental state and sentiment based on their messages.
-            
-            Conversation:
-            "role": "user", "content": {prompt}
-            "role": "chatbot", "content": {full_response}
-    ''')
-        
-        st.session_state.all_stm_summary += stm
-
-        # Convert the AI response to audio and play it
-        audio_path = text_to_speech(full_response)
-        audio_file = open(audio_path, "rb")
-        st.audio(audio_file.read(), format="audio/mp3")
-
-        os.remove(audio_path)
-    save_chat_history(st.session_state.messages)
-
-elif st.session_state.active_tab == "EndChat":
+# print(questions)
     
-    # udpate LTM in file
-    print("----------------------------------------------------------")
-    print(st.session_state.all_stm_summary)
-    print("----------------------------------------------------------")
+gen_questions = ['Can you help me understand the root cause of my anxiety/depression?',
+'How does medication interact with other medications I am taking?',
+'What are some natural alternatives to antidepressant medication?', 
+'How will therapy sessions be different in person versus over the phone?', 
+'my doctor prescribed antidepressants for me, do they recommend taking them regularly?', 
+'Do you think my anxiety is related to a specific event or situation I experienced?,',
+'are there any lifestyle changes that can help manage my depression?,',
+'stress affects my ability to function at its peak; how might it affect my job performance.', 
+'on average, how long does therapy last for someone seeking treatment for anxiety?', 
+'Do you think my past relationships have impacted my mental health in the present?', 
+'is it true that medication can have some side effects like weight gain or insomnia?', 
+'anxiety is debilitating sometimes - do there any alternative methods to reduce stress?',
+'strategies exist today which allow the person battling depression and anxiety.', 
+'do different therapy models work well for all individuals seeking help', 
+'I am struggling to eat regular meals due to low self-esteem.',
+'are there certain ways you treat suicidal thoughts in your practice.',
+'Vestibules (spaces where thoughts reside) in our mind can also get distorted, are they a concern?', 
+'Refresh yourself whenever your mental state seems worn out; is there such a thing called a “reset” program', 
+'on the use of technology regarding therapy,',
+'relaxation techniques exist today to reduce anxiety while working.', 
+'self-harming behaviors are symptoms an individual experiences sometimes; can this be treated?',
+'Are negative thoughts and depression intertwined in any way?', 
+'medicinal options for stress disorders have some pros and cons;', 
+'do some people experience long-term effects of anxiety, such as memory issues in the future?', 
+'remindful breathing techniques and meditation are beneficial to mental health.',
+"What are my symptoms when I first started experiencing depression?",
+"How would you describe the emotional state of someone with depression?",
+"What's the most common misconception about people with depression?",
+"Can depression be inherited?",
+"How can I know if my thoughts or feelings are related to depression?",
+"What are some physical symptoms of depression?",
+"Are there any genetic factors that contribute to depression?",
+"Can you explain the difference between clinical depression and normal sadness?",
+"What role does self-care play in managing depression?",
+"How can I support myself while taking medication for depression?",
+"What is cognitive-behavioral therapy (CBT) and how helpful is it for depression?",
+"Can you walk me through the process of identifying and challenging negative thought patterns?",
+"Is there a link between stress and depression, and if so, what can I do to manage stress?",
+"What are some effective ways to set boundaries with others when experiencing depression?",
+"Can medication for depression be addictive or lead to dependency?",
+"How does social support from family and friends impact recovery from depression?",
+"Are there any lifestyle changes that could prevent me from developing depression in the future?",
+"What is mental health and what does it mean to prioritize my mental well-being?",
+"Can you explain how depression affects sleep patterns, appetite, and energy levels?",
+"How do I create a daily routine when feeling depressed or unmotivated?",
+"Can therapy with a therapist who specializes in depression be more effective than other types of therapy?",
+"What are some healthy coping mechanisms for dealing with stressful situations?",
+"Can you recommend any relaxation techniques to help me manage my mind and body?",
+"What are some physical symptoms I should be aware of when I'm experiencing an anxiety attack, and how can I alleviate them?",
+"How do I avoid feeling like I'm losing control or going crazy during an anxiety episode?",
+"Can you help me understand the differences between low-level anxiety and panic attacks, and how to manage each?",
+"What are some healthy coping mechanisms for managing stress in a world that often feels overwhelming?",
+"In what ways can social media contribute to increased anxiety, and how can I minimize its impact on my mental health?",
+"How have you helped your patients when they're experiencing their first anxiety attack or panic disorder?",
+"Can you define the concept of 'activation' as it relates to anxiety, and provide examples?",
+"How do I know if what's causing me stress will continue to be the same going forward in life, or should we reassess periodically?",
+"Are there specific situations that seem to trigger my anxiety the most?",
+"What role does genetics play in my anxiety level? Would this help for future therapy?",
+"Can you outline ways to maintain mental hygiene throughout the day, like a routine or calming exercise?",
+"Is your experience with any related anxiety conditions something we should consider (PTSD, OCD, etc.)?",
+"In what way do you suggest we work on relaxation techniques and mindfulness in conjunction?",
+"Do you think social pressures are impacting my mental health regarding my anxiety?",
+"How can we address unhelpful thought patterns through therapy?",
+"Can I establish an anxiety log to help keep track of when panic attacks happen and how long they last?",
+"How can I create a comfortable atmosphere in therapy sessions that helps increase trust between you and me?",
+"What steps would be needed if the thoughts or memories are preventing me and affecting my life significantly?",
+"What are some common causes or triggers for anxiety and stress in the brain?", 
+"Can hypnotherapy or meditation be effective in reducing anxiety and promoting calmness?", 
+"How can I recognize the physical symptoms associated with an anxious state?", 
+"What is the role of mindfulness in managing stress and anxiety?", 
+"Are there any specific exercises or practices that can help alleviate anxiety triggers?", 
+"What is the relationship between a non-calm mind and emotional regulation?", 
+"How does trauma impact mental health and non-calmness?", 
+"What are some effective coping strategies for dealing with anxiety-provoking situations?", 
+"Can cognitive-behavioral therapy (CBT) help in managing stress and anxiety?", 
+"How can I prioritize self-care to maintain a calm state of mind?", 
+"Are there any natural supplements that can help regulate mood or promote relaxation?", 
+"What is the difference between emotional overwhelm and emotional numbness?", 
+"How can mindfulness practices, such as deep breathing, affect the nervous system?", 
+"What are some ways to recognize the warning signs of an anxious episode?", 
+"Can journaling be a helpful tool in processing emotions and promoting calm?", 
+"Are there any lifestyle changes that can contribute to developing chronic anxiety?", 
+"What is the role of sleep quality in maintaining mental well-being and reducing stress?", 
+"How does social support impact non-calm states and overall mental health?", 
+"What are some self-compassionate exercises that can help process difficult emotions?", 
+"Can art therapy or creative expression be a beneficial outlet for managing anxiety?", 
+"What are some ways to structure daily routines to promote mindfulness and calmness?", 
+"How do I differentiate between a calm state of mind and a relaxed state?", 
+"Are there any nutrition-related factors that contribute to non-calm states or anxiety episodes?", 
+"What is the process for implementing emotional self-talk exercises?", 
+"How can reframing negative thoughts be an effective way to manage stress and anxiety?",
+"What are some coping mechanisms you recommend for managing everyday household chores with anxiety?",
+"Can you help me understand why my body is experiencing physical symptoms of stress when I'm feeling mentally calm?",
+"How do you suggest I prioritize self-care activities during periods of high social isolation?",
+"Are there any specific mindfulness techniques that you recommend for individuals diagnosed with a mood disorder?",
+"What role would you say stress plays in affecting our eating habits?",
+"Can we discuss the different ways people react to and cope with financial stress?",
+"How can I determine whether my chronic fatigue is being caused by or contributed to stress?",
+"Are there any particular times of day when stress tends to peak for most people?",
+"How would you say that my body's physiological responses (e.g., heart rate, sweating) relate to my emotional state during stressful events?",
+"What are some healthy ways I can reframe negative thoughts about myself during periods of high stress and pressure?"]
 
-    new_LTM = invoke_llm(f'''summarize in around 20 lines without missing any details: {st.session_state.all_stm_summary + current_LTM}''')
-    with open(LTM_file_path, 'w') as file:
-        file.write(new_LTM)
-    # send STM to doctor
-    email_start_time = time.time()
-    email_body = st.session_state.all_stm_summary
-    send_email(email_body)
-    email_end_time = time.time()
-    time_for_email = email_end_time - email_start_time
-    print("email time: ", time_for_email)
-    # emergency_calling()
-    st.session_state.active_tab = "Home"
-    st.rerun()
-    
-    
-elif st.session_state.active_tab == "Home":
-    st.title("Welcome to MindMend")
-    st.markdown("""
-        MindMend is here to support your mental health journey. We understand that seeking help and maintaining your mental well-being is important. Our chatbot is available to chat with you anytime you need.
+# Comprehensiveness, relevance, empathy, action items wise
+metrics = ['Comprehensiveness', 'Empathy', 'Conciseness']
 
-        ### How to use MindMend:
-        1. **Onboarding**: Understand how to use the chatbot and set up your preferences.
-        2. **Chat**: Start a conversation with the chatbot for emotional support, advice, or coping strategies.
-        3. **End Chat**: End your session when you're ready.
 
-        If you ever feel overwhelmed, remember that you are not alone, and support is available. Take care of your mental health.
+time_taken_mm = []
+token_count = []
+overall_time_start = time.time()
+mindmend_grade = {}
 
-        ### Quick Resources:
-        - **Crisis Helplines**: If you're in immediate need of help, check out local crisis helplines or chat services.
-        - **Mindfulness Tips**: Practice breathing exercises or mindfulness activities to relax.
-        - **Mental Health Articles**: Learn about managing stress, anxiety, and other mental health topics.
 
-        Stay calm, stay strong, and reach out whenever you need assistance.
-    """)
+for metric in metrics:
+    mindmend_grade[metric] = []
 
-    st.markdown("#### Ready to start? Select one of the tabs from the sidebar to begin your journey.")
-    st.markdown("""
-        - **Onboarding**: Set your preferences and get acquainted with the features of MindMend.
-        - **Chat**: Start a supportive chat with the bot.
-        - **End Chat**: End the session when you're ready.
-    """)
+cnt = 0
+for question in gen_questions:
+    mm_start_time = time.time()
+    MindMend_answer = perform_RAG(question)
+    mm_end_time = time.time()
 
-elif st.session_state.active_tab == "Onboarding":
-    if "page" not in st.session_state:
-        st.session_state.page = "form"  # Default to the form page
+    token_count.append(len(MindMend_answer.split()))
+    time_taken_mm.append(mm_end_time-mm_start_time)
 
-    # Form page for user input
-    if st.session_state.page == "form":
-        # st.title("Welcome to MindMend!")
-        st.header("Onboarding Process")
-        st.write("This is where we will guide you through the onboarding process.")
+
+    for metric in metrics:
         
-        # Add 6 text boxes to get user information
-        user_full_name = st.text_input("Full Name")
-        user_contact_number = st.text_input("Your contact Number")
-        doctor_name = st.text_input("Doctor's Name")
-        doctor_email = st.text_input("Doctor's Email")
-        sos_contact_name = st.text_input("SOS Contact Name")
-        sos_contact_number = st.text_input("SOS Contact Number")
-        
-        # Button to trigger the function
-        if st.button("Submit"):
-            save_onboarding_info(user_full_name, doctor_name, doctor_email, sos_contact_name, sos_contact_number, user_contact_number)
-            st.write("All details saved.")
-            print("All details saved.")
-            st.session_state.page = "confirmation"  # Set page to confirmation after submitting the form
-            st.rerun()  # Refresh the page to show confirmation page
+        prompt = f'''
+               You are tasked with grading the answer to the following question out of 5:
+                Question: {question}.
 
-    # Confirmation page
-    elif st.session_state.page == "confirmation":
-        st.write("All details saved.")
+                Answer: {MindMend_answer}
+
+                Evaluation Criterion: {metric}.
+
+                Grade strictly based on this criterion.
+                Respond grade out of 5 with one digit only.
+                Do NOT provide any additional explanation or rationale.
+                '''
+        grade = invoke_llm(prompt)
+        # avg += grade
+        mindmend_grade[metric].append(grade)
+        print(grade)
+        cnt += 1
         
-        # Button to go back to the form page for editing details
-        if st.button("Edit Details"):
-            st.session_state.page = "form"
-            st.rerun()  # Refresh the page to go back to the form page
+       
+
+overall_time_end = time.time()
+
+overall_time = overall_time_end-overall_time_start
+
+print("local time by MM: ", time_taken_mm)
+print("tokens MM: ", token_count)
+print("overall time taken: ", overall_time)
+print("MindMend grades: ", mindmend_grade)
+print("count: ", cnt)
+# save time, token lists and counts!
+# Folder name
+folder_name = "eval-results"
+
+# Ensure the folder exists
+os.makedirs(folder_name, exist_ok=True)
+
+# Function to write variable data to a text file
+def write_to_file(filename, data):
+    with open(os.path.join(folder_name, filename), 'w') as file:
+        if isinstance(data, (list, tuple)):
+            file.write("\n".join(map(str, data)))
+        else:
+            file.write(str(data))
+
+# Write each variable to a separate file
+write_to_file("time_taken_MM.txt", time_taken_mm)
+write_to_file("token_count.txt", token_count)
+write_to_file("overall_time.txt", overall_time)
+write_to_file("mindmend_grades.txt", mindmend_grade)
+
+
+print(f"Variables saved in the '{folder_name}' folder.")
+# print("Average grade=", avg/cnt)

@@ -7,6 +7,8 @@ Next steps:
 
 # 4 : Response when its an emerygency 
 
+#### add empathetic
+
 # 4 : make sure never speaks negative 
 
 # 5 : Add proper resources on home page!!!
@@ -19,6 +21,30 @@ Next steps:
     # average time to asnwer - 100 question loop
     # average 1-1 message delay across conversation!!
 
+# first evaluation technique:
+    # 1. tell LLM to generate 100 mental health based questions
+    # 2. for each question- A. Generate answer by LLM and B. generate your answer
+    # 3. ask LLM to tell which ansewr is better
+        #### METRICS ####
+        #1. Comprehensiveness, relevance, helpfulness, action items wise
+
+# second adn third eval technique:
+    # 1. generate 100 mental health quesstions
+    # 2. in a loop- generate answer
+    # 3. get total time
+    # 4. get time for each questions and count of tokens per answer
+
+#  fourth & fifth eval technique:
+    # 25 questions
+    # your benchmark vs answer (HUMAN RATER)
+    # get precision
+    # get recall
+
+# 6th : time for doc rag(RAG) creation
+
+# 7th : call time, email time
+
+# 8th (IMP) : normal vs RAG based bot
 # report    
 
     # impressive analysis
