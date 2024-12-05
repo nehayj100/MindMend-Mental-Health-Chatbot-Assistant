@@ -539,28 +539,33 @@ elif st.session_state.active_tab == "EndChat":
 elif st.session_state.active_tab == "Home":
     st.title("Welcome to MindMend")
     st.markdown("""
-        MindMend is here to support your mental health journey. We understand that seeking help and maintaining your mental well-being is important. Our chatbot is available to chat with you anytime you need.
+        Your buddy - MindMend is here to support your mental health journey. 
+        Seeking help and maintaining your mental well-being is important!
+        Lets chat! 🤗
 
         ### How to use MindMend:
-        1. **Onboarding**: Understand how to use the chatbot and set up your preferences.
-        2. **Chat**: Start a conversation with the chatbot for emotional support, advice, or coping strategies.
-        3. **End Chat**: End your session when you're ready.
+        1. **Onboarding**: Create your Profile with your doctor!
+        2. **Chat**: Start a conversation with the chatbot for emotional support and discussions.
+        3. **End Chat**: End your session when you're ready and let your doctor know about the conversation via an email.
 
         If you ever feel overwhelmed, remember that you are not alone, and support is available. Take care of your mental health.
 
         ### Quick Resources:
-        - **Crisis Helplines**: If you're in immediate need of help, check out local crisis helplines or chat services.
-        - **Mindfulness Tips**: Practice breathing exercises or mindfulness activities to relax.
-        - **Mental Health Articles**: Learn about managing stress, anxiety, and other mental health topics.
+        - **[Crisis Helplines](https://www.crisistextline.org/)**: If you need urgent help of live agents, check out local crisis helplines or chat services.
+        - **[Mindfulness Tips](https://www.headspace.com/)**: Practice breathing exercises or mindfulness activities to relax.
+        - **[Mental Health Articles](https://nichefoundation.in/blog-feed/)**: Learn about managing stress, anxiety, and other mental health topics.
 
         Stay calm, stay strong, and reach out whenever you need assistance.
     """)
 
-    st.markdown("#### Ready to start? Select one of the tabs from the sidebar to begin your journey.")
+    st.markdown("#### Ready to start?")
+    st.markdown("Select one of the tabs from the sidebar to begin your journey.")
     st.markdown("""
+        - **Home**: Come back to see all useful resources!
         - **Onboarding**: Set your preferences and get acquainted with the features of MindMend.
-        - **Chat**: Start a supportive chat with the bot.
-        - **End Chat**: End the session when you're ready.
+        - **Chat**: Start a supportive chat with MindMend.
+        - **End Chat**: End the session when you're ready and inform your doctor!
+        - **Delete Chat History**: Wipe of the old slate and start a new conversation!
     """)
 
 elif st.session_state.active_tab == "Onboarding":
