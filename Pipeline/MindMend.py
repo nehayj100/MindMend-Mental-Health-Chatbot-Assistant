@@ -42,7 +42,7 @@ user_contact_number_path = "onboarding-details/user-contact-number.txt"
 password_path = "confidential/email_pass.txt"
 # Open and read the file for email password
 with open(password_path, 'r') as file:
-    passkey = file.read()  # Read the entire content of the file 
+    passkey = file.read()  
 
 LTM_file_path = "memory/LTM.txt"
 # STM_file_path = "memory/STM.txt"
@@ -83,8 +83,6 @@ def init_chroma_client():
         database=DEFAULT_DATABASE,
     )
 
-
-# functions for emails
 
 def invoke_llm(prompt:str) -> str:
     try:
@@ -131,7 +129,7 @@ def send_email_internal(to_addr: str, subject: str, body: str) -> str:
     # message["Cc"] = cc_addr  # Add CC here
     message.attach(MIMEText(body, "plain"))
 
-    recipients = [to_addr, cc_addr]  # List of all recipients
+    recipients = [to_addr, cc_addr] 
 
     # Send the email
     try:
@@ -150,7 +148,7 @@ def get_doctors_email():
     doctor_email_file_path = "onboarding-details/doctors-email.txt"
     try:
         with open(doctor_email_file_path, 'r') as file:
-            file_content = file.read()  # Read and strip any extra whitespace
+            file_content = file.read()  
         return file_content
     except FileNotFoundError:
         "The file 'doctors-email' was not found in the specified folder."
@@ -192,12 +190,12 @@ def load_documents():
 
     documents = []
     for filename in os.listdir(DATA_PATH):
-        if filename.startswith("."):  # Skip hidden files like .DS_Store
+        if filename.startswith("."):  
             continue
         filepath = os.path.join(DATA_PATH, filename)
-        if filename.endswith(".txt"):  # Process only text files
+        if filename.endswith(".txt"):  
             with open(filepath, "r", encoding="utf-8") as file:
-                # Create a Document object instead of a dictionary
+                
                 documents.append(Document(page_content=file.read(), metadata={"source": filename}))
         else:
             raise ValueError(f"Unsupported file format: {filename}")
@@ -376,7 +374,6 @@ def get_user_contact_number():
         return file.read()
 
 def check_emergency(prompt):
-    # Normalize and check for explicit keywords
     normalized_prompt = prompt.lower()
     emergency_start_time = time.time()
     emergency_keywords = [
@@ -385,9 +382,9 @@ def check_emergency(prompt):
     is_emergency = any(re.search(rf"\b{keyword}\b", normalized_prompt) for keyword in emergency_keywords)
 
     emergency_patterns = [
-                            r"\b(help me)\b",  # Detect phrases like "help me"
-                            r"(die|death|kill|hang).*(myself|me)",  # Phrases indicating self-harm
-                            r"(urgent|immediate).*(help|attention)",  # Urgent help requests
+                            r"\b(help me)\b",  
+                            r"(die|death|kill|hang).*(myself|me)", 
+                            r"(urgent|immediate).*(help|attention)", 
                          ]
     if any(re.search(pattern, normalized_prompt) for pattern in emergency_patterns):
         print("Emergency detected via pattern matching.")
@@ -442,17 +439,12 @@ def save_chat_history(messages):
 if "messages" not in st.session_state:
     st.session_state.messages = load_chat_history()
 
-# Set the page config as the first Streamlit command
-#st.set_page_config(page_title="MindMend : Let's talk!", layout="wide")
-
-# Sidebar for navigation and chat history deletion
+# Sidebar for navigation 
 with st.sidebar:
-    # Button to delete chat history
+    
     st.title("MindMend")
-
-    # Navigation buttons for tabs
     if "active_tab" not in st.session_state:
-        st.session_state.active_tab = "Home"  # Default to the "Chat" tab
+        st.session_state.active_tab = "Home" 
 
     if st.button("Home"):
         st.session_state.active_tab = "Home"
@@ -469,7 +461,7 @@ with st.sidebar:
 
 if "all_stm_summary" not in st.session_state:
         st.session_state.all_stm_summary = ""
-# Display content based on the active tab
+
 if st.session_state.active_tab == "Chat":
     st.title("Lets talk!")
     for message in st.session_state.messages:
@@ -477,9 +469,7 @@ if st.session_state.active_tab == "Chat":
         with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
-    # Chat Tab
     all_stm_summary = ""
-    #invoke_llm(f'''Summarize this text in 5-6 lines. make sure to include all important points: {current_LTM}''')
     stm = ""
 
     # Initialize session state for storing chat history
@@ -517,7 +507,6 @@ if st.session_state.active_tab == "Chat":
         
         st.session_state.all_stm_summary += stm
 
-        # Convert the AI response to audio and play it
         audio_path = text_to_speech(full_response)
         audio_file = open(audio_path, "rb")
         st.audio(audio_file.read(), format="audio/mp3")
@@ -576,15 +565,13 @@ elif st.session_state.active_tab == "Home":
 
 elif st.session_state.active_tab == "Onboarding":
     if "page" not in st.session_state:
-        st.session_state.page = "form"  # Default to the form page
+        st.session_state.page = "form" 
 
-    # Form page for user input
     if st.session_state.page == "form":
-        # st.title("Welcome to MindMend!")
+        
         st.header("Onboarding Process")
         st.write("This is where we will guide you through the onboarding process.")
         
-        # Add 6 text boxes to get user information
         user_full_name = st.text_input("Full Name")
         user_contact_number = st.text_input("Your contact Number")
         doctor_name = st.text_input("Doctor's Name")
@@ -592,19 +579,17 @@ elif st.session_state.active_tab == "Onboarding":
         sos_contact_name = st.text_input("SOS Contact Name")
         sos_contact_number = st.text_input("SOS Contact Number")
         
-        # Button to trigger the function
         if st.button("Submit"):
             save_onboarding_info(user_full_name, doctor_name, doctor_email, sos_contact_name, sos_contact_number, user_contact_number)
             st.write("All details saved.")
             print("All details saved.")
-            st.session_state.page = "confirmation"  # Set page to confirmation after submitting the form
-            st.rerun()  # Refresh the page to show confirmation page
+            st.session_state.page = "confirmation" 
+            st.rerun()  
 
     # Confirmation page
     elif st.session_state.page == "confirmation":
         st.write("All details saved.")
         
-        # Button to go back to the form page for editing details
         if st.button("Edit Details"):
             st.session_state.page = "form"
-            st.rerun()  # Refresh the page to go back to the form page
+            st.rerun() 

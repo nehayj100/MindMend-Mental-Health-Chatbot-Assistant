@@ -157,7 +157,7 @@ def get_doctors_email():
     doctor_email_file_path = "onboarding-details/doctors-email.txt"
     try:
         with open(doctor_email_file_path, 'r') as file:
-            file_content = file.read()  # Read and strip any extra whitespace
+            file_content = file.read() 
         return file_content
     except FileNotFoundError:
         "The file 'doctors-email' was not found in the specified folder."
@@ -391,9 +391,9 @@ def check_emergency(prompt):
     is_emergency = any(re.search(rf"\b{keyword}\b", normalized_prompt) for keyword in emergency_keywords)
 
     emergency_patterns = [
-                            r"\b(help me)\b",  # Detect phrases like "help me"
-                            r"(die|death|kill|hang).*(myself|me)",  # Phrases indicating self-harm
-                            r"(urgent|immediate).*(help|attention)",  # Urgent help requests
+                            r"\b(help me)\b", 
+                            r"(die|death|kill|hang).*(myself|me)",  
+                            r"(urgent|immediate).*(help|attention)", 
                          ]
     if any(re.search(pattern, normalized_prompt) for pattern in emergency_patterns):
         print("Emergency detected via pattern matching.")
@@ -584,14 +584,11 @@ print("tokens MM: ", token_count)
 print("overall time taken: ", overall_time)
 print("MindMend grades: ", mindmend_grade)
 print("count: ", cnt)
-# save time, token lists and counts!
-# Folder name
+
 folder_name = "eval-results"
 
-# Ensure the folder exists
 os.makedirs(folder_name, exist_ok=True)
 
-# Function to write variable data to a text file
 def write_to_file(filename, data):
     with open(os.path.join(folder_name, filename), 'w') as file:
         if isinstance(data, (list, tuple)):
@@ -599,7 +596,6 @@ def write_to_file(filename, data):
         else:
             file.write(str(data))
 
-# Write each variable to a separate file
 write_to_file("time_taken_MM.txt", time_taken_mm)
 write_to_file("token_count.txt", token_count)
 write_to_file("overall_time.txt", overall_time)
