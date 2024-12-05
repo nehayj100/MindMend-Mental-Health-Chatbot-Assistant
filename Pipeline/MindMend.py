@@ -271,8 +271,8 @@ def perform_RAG(prompt):
     combined_data = f"{data1}\n\n{data2}\n\n{data3}\n\n{data4}\n\n{data5}"
 
 
-    print(combined_data)
-    print("-----------------------------------------------------------------------------------------------")
+    # print(combined_data)
+    # print("-----------------------------------------------------------------------------------------------")
     
     final_prompt = f"""
         You are an intelligent assistant specializing in mental health. Below is a user query and additional reference data to help you craft an accurate response. Follow the instructions carefully:
@@ -528,9 +528,9 @@ if st.session_state.active_tab == "Chat":
 elif st.session_state.active_tab == "EndChat":
     
     # udpate LTM in file
-    print("----------------------------------------------------------")
-    print(st.session_state.all_stm_summary)
-    print("----------------------------------------------------------")
+    # print("----------------------------------------------------------")
+    # print(st.session_state.all_stm_summary)
+    # print("----------------------------------------------------------")
 
     new_LTM = invoke_llm(f'''summarize in around 20 lines without missing any details: {st.session_state.all_stm_summary + current_LTM}''')
     with open(LTM_file_path, 'w') as file:
