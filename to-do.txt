@@ -1,9 +1,12 @@
 Next steps:
 # 1 : add summary prompts
         # check why response is cming in ""
+
 # 2 : add good data and re-run + optimize chunk size etc for RAG
 
 # 3 : add actiivties separately and tell the bot to suggest....!!!
+
+# 4 : Response when its an emerygency 
 
 # 4 : make sure never speaks negative 
 
@@ -25,6 +28,7 @@ Next steps:
     # tell to add your number as rn only 1 nuber access from twillio
     # tell how you ahve shadowed delays :)
 
+    # tell data pre-processing steps and document the code for yourslf
 # video
 
 -----------------------

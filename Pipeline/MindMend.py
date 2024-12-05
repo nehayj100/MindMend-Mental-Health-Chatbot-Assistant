@@ -23,8 +23,6 @@ import json
 from twilio.rest import Client
 
 
-
-
 # Initialize Ollama client
 ollama_client = openai.Client(base_url="http://127.0.0.1:11434/v1", api_key="EMPTY")
 
@@ -165,8 +163,8 @@ def send_email(body_content):
     print("user name is: ", get_user_full_name())
     print("Doctors email is: ", get_doctors_email())
     subject = f'''Summary of conversation with {user_full_name} on {formatted_date_time}'''
-    # TODO : Improve Prompt 
-    body = invoke_llm(f'''"""
+    
+    body = invoke_llm(f'''
     Please write an email body following these instructions:
     1. This email is a summary of a conversation between a user and a mental health chatbot named MindMend.
     2. The email is addressed to the doctor: {doctor_name}.
@@ -175,7 +173,7 @@ def send_email(body_content):
     5. End the email with "From, MindMend."
 
     Ensure the email is clear, professional, and formatted as per the instructions.
-"""''')
+''')
 
     output = send_email_internal(to_addr, subject, body)
     # print(output)
@@ -505,11 +503,15 @@ if st.session_state.active_tab == "Chat":
             check_emergency(prompt)
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-        # TODO : Improve Prompt
-        stm = invoke_llm(f'''summrize this in 1-2 lines. make sure to capture the 
-                                    sentiment and emotion of this chat: 
-                                    "role": "user", "content": {prompt}
-                                    "role": "chatbot", "content": {full_response}''')
+        stm = invoke_llm(f'''
+            Summarize the following conversation in a concise yet detailed manner. 
+            Ensure the summary captures the key points of the conversation like any issues states.
+            At the end of the summary, clearly state the user's possible mental state and sentiment based on their messages.
+            
+            Conversation:
+            "role": "user", "content": {prompt}
+            "role": "chatbot", "content": {full_response}
+    ''')
         
         st.session_state.all_stm_summary += stm
 
@@ -531,9 +533,7 @@ elif st.session_state.active_tab == "EndChat":
     print(st.session_state.all_stm_summary)
     print("----------------------------------------------------------")
 
-    # TODO : Imrpove prompt
-
-    new_LTM = invoke_llm(f'''summarize in 20 lines: {st.session_state.all_stm_summary + current_LTM}''')
+    new_LTM = invoke_llm(f'''summarize in around 20 lines without missing any details: {st.session_state.all_stm_summary + current_LTM}''')
     with open(LTM_file_path, 'w') as file:
         file.write(new_LTM)
     # send STM to doctor
