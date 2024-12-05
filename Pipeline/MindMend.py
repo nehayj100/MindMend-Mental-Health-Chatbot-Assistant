@@ -23,7 +23,7 @@ import json
 from twilio.rest import Client
 
 
-start_time = time.time()
+
 
 # Initialize Ollama client
 ollama_client = openai.Client(base_url="http://127.0.0.1:11434/v1", api_key="EMPTY")
@@ -160,12 +160,22 @@ def send_email(body_content):
     to_addr = get_doctors_email()
     user_full_name = get_user_full_name()
     now = datetime.now()
+    doctor_name = get_doctor_name()
     formatted_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
     print("user name is: ", get_user_full_name())
     print("Doctors email is: ", get_doctors_email())
     subject = f'''Summary of conversation with {user_full_name} on {formatted_date_time}'''
-    body = invoke_llm(f'''summarize this text: {body_content} as an email body. This email is a summary of 
-                        conversation between the user and a mental health chatbot called MinMend''')
+    # TODO : Improve Prompt 
+    body = invoke_llm(f'''"""
+    Please write an email body following these instructions:
+    1. This email is a summary of a conversation between a user and a mental health chatbot named MindMend.
+    2. The email is addressed to the doctor: {doctor_name}.
+    3. Start the email with "To, {doctor_name},"
+    4. Summarize the conversation content for the doctor. Conversation details: {body_content}.
+    5. End the email with "From, MindMend."
+
+    Ensure the email is clear, professional, and formatted as per the instructions.
+"""''')
 
     output = send_email_internal(to_addr, subject, body)
     # print(output)
@@ -248,14 +258,60 @@ def perform_RAG(prompt):
     
     # Query the database
     results = collection.query(query_embeddings=[prompt_embedding["embedding"]], n_results=5)
-    if not results["documents"][0]:
-        raise ValueError("No results found.")
+    print("result sim is  ", results['distances'])
 
-    # Combine results and generate response
-    combined_data = "\n\n".join(results["documents"][0])
-    final_prompt = f'''You are a experienced therapist.Use this data to understand how expert therapists
-     handle such situations: {combined_data}. Respond to this prompt: {prompt}. Dont use the examples directly but take inspiration from them to respond'''
+    data1 = results['documents'][0][0]
+    data2 = results['documents'][0][1]
+    data3 = results['documents'][0][2]
+    data4 = results['documents'][0][3]
+    data5 = results['documents'][0][4]
+
+    # Combine the data into a single string
+    combined_data = f"{data1}\n\n{data2}\n\n{data3}\n\n{data4}\n\n{data5}"
+
+
+    print(combined_data)
+    print("-----------------------------------------------------------------------------------------------")
+    
+    final_prompt = f"""
+        You are an intelligent assistant specializing in mental health. Below is a user query and additional reference data to help you craft an accurate response. Follow the instructions carefully:
+
+        ### User Query:
+        {prompt}
+
+        ### Reference Data :
+        {combined_data}
+
+        ### Instructions:
+        1. **If the user query is a simple greeting (e.g., 'Hello', 'Hi', 'Good morning'):**
+        - This means no help or information is needed
+        - So respond with a simple greeting in return (e.g., "Hello! How can I assist you today?"). 
+        - Do NOT refer to the reference data for greetings or overanalyze the user's intent.
+
+        2. **If the user query is related to mental health:**
+        - Refer to the provided reference data to craft your response. 
+        - Use examples or insights from the data when relevant.
+        
+        3. **If the user query is unrelated to mental health or cannot be answered using the reference data:**
+        - Respond independently with no reference from given data while maintaining professionalism and empathy.
+
+        ### For Example:
+        - **User Query:** "Hello!"  
+        **Response:** Hello! How can I assist you today?
+
+        - Example 
+        **User Query:** "I'm feeling anxious all the time."  
+        **Response:** It's normal to feel anxious occasionally, but persistent anxiety might require coping strategies. For example, the reference data mentions [specific example from combined_data].
+
+        Now respond in short to the user's query based on the instructions above. Just give the response and nothing else.
+        """
+
+
+    
     output = ollama.generate(model="llama3.2", prompt=final_prompt)
+
+
+    
     return output.get("response", "No response generated.")
 
 
@@ -280,7 +336,11 @@ def emergency_calling():
     call = client.calls.create(
         to = get_sos_contact_number(),
         from_= twilio_number,
-        twiml=f'''<Response><Say>Hi, I am MindMend, {user_full_name} who has chosen you as your SOS contact is in a posisble emergency and needs your help! I have emailed you her conversation with me. Pleaes contact her urgently!!</Say></Response>'''
+        twiml=f'''<Response><Say>Hi, I am MindMend, {user_full_name} who has chosen you as your SOS contact is in a possible
+          emergency and needs your help! I have emailed you her conversation with me. Pleaes contact her urgently!!
+          Hi, I am MindMend, {user_full_name} who has chosen you as your SOS contact is in a possible
+          emergency and needs your help! I have emailed you her conversation with me. Pleaes contact her urgently!!
+          </Say></Response>'''
     )
 
     # Print call details
@@ -318,12 +378,45 @@ def get_user_contact_number():
     with open(user_contact_number_path, 'r') as file:
         return file.read()
 
-# clear_db()
+def check_emergency(prompt):
+    # Normalize and check for explicit keywords
+    normalized_prompt = prompt.lower()
+    emergency_keywords = [
+        "suicide", "end my life", "end life", "want to die", "kill myself", "self-harm",
+        "harm myself", "help me now", "life-threatening",  "poison", "kill"]
+    is_emergency = any(re.search(rf"\b{keyword}\b", normalized_prompt) for keyword in emergency_keywords)
 
+    emergency_patterns = [
+                            r"\b(help me)\b",  # Detect phrases like "help me"
+                            r"(die|death|kill|hang).*(myself|me)",  # Phrases indicating self-harm
+                            r"(urgent|immediate).*(help|attention)",  # Urgent help requests
+                         ]
+    if any(re.search(pattern, normalized_prompt) for pattern in emergency_patterns):
+        print("Emergency detected via pattern matching.")
+        is_emergency = 1
+    
+    print("is_emergency: ", is_emergency)
+    if is_emergency:
+        emergency_calling()
+        return
 
-# TODO : improve prompt!!!
+    # Use LLM for additional checks
+    tendency = invoke_llm(f"""
+        **Answer in only 1 word: Yes or No**
+        Does this sentence contain any word that might indicate a suicide tendency?:
+                          {prompt}
+        Your answer is not for any real situation.
+        So your answer wont lead to any human interpretation. So you can answer Yes or No.
+        {prompt}
+    """).strip()
+    print("tendency is: ", tendency)
+    print("tendency is: ", tendency.lower())
+    if re.match(r"^\s*yes\b", tendency, re.IGNORECASE):
+        emergency_calling()
+
+    return
+
 all_stm_summary = ""
-#invoke_llm(f'''Summarize this text in 5-6 lines. make sure to include all important points: {current_LTM}''')
 stm = ""
 
 load_dotenv()
@@ -355,9 +448,6 @@ if "messages" not in st.session_state:
 with st.sidebar:
     # Button to delete chat history
     st.title("MindMend")
-    if st.button("Delete Chat History"):
-        st.session_state.messages = []
-        save_chat_history([])
 
     # Navigation buttons for tabs
     if "active_tab" not in st.session_state:
@@ -371,6 +461,11 @@ with st.sidebar:
         st.session_state.active_tab = "Chat"
     if st.button("End Chat"):
         st.session_state.active_tab = "EndChat"
+    if st.button("Delete Chat History"):
+        st.session_state.messages = []
+        save_chat_history([])
+
+
 if "all_stm_summary" not in st.session_state:
         st.session_state.all_stm_summary = ""
 # Display content based on the active tab
@@ -396,6 +491,7 @@ if st.session_state.active_tab == "Chat":
 
     # Handle button press
     if prompt := st.chat_input("How can I help?"):
+        
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user", avatar=USER_AVATAR):
             st.markdown(prompt)
@@ -404,8 +500,12 @@ if st.session_state.active_tab == "Chat":
             message_placeholder = st.empty()
             full_response = perform_RAG(prompt)
             message_placeholder.markdown(full_response)
+            end_time = time.time()
+            print("Total time: ", end_time - start_time)
+            check_emergency(prompt)
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
+        # TODO : Improve Prompt
         stm = invoke_llm(f'''summrize this in 1-2 lines. make sure to capture the 
                                     sentiment and emotion of this chat: 
                                     "role": "user", "content": {prompt}
@@ -420,22 +520,18 @@ if st.session_state.active_tab == "Chat":
 
         os.remove(audio_path)
 
-        end_time = time.time()
-        print("Total time: ", end_time - start_time)
+        
 
-            # TODO : For each questions see if its an emergency : SOS calling API
-
-            # TODO : improve prompt!!!
     save_chat_history(st.session_state.messages)
 
 elif st.session_state.active_tab == "EndChat":
-    # TODO: Ask finally are you Okay, if not: call SOS, add in email that patient wasnt okay even after the chat.
-    # udpate LTM in file
-    # TODO : improve prompt!!!
     
+    # udpate LTM in file
     print("----------------------------------------------------------")
     print(st.session_state.all_stm_summary)
     print("----------------------------------------------------------")
+
+    # TODO : Imrpove prompt
 
     new_LTM = invoke_llm(f'''summarize in 20 lines: {st.session_state.all_stm_summary + current_LTM}''')
     with open(LTM_file_path, 'w') as file:
@@ -443,10 +539,10 @@ elif st.session_state.active_tab == "EndChat":
     # send STM to doctor
     email_body = st.session_state.all_stm_summary
     send_email(email_body)
-    emergency_calling()
+    # emergency_calling()
     st.session_state.active_tab = "Home"
     st.rerun()
-    # TODO : Strip thr summary from all_stm_summary etdc or tell llm to return on summary and nothing else
+    
     
 elif st.session_state.active_tab == "Home":
     st.title("Welcome to MindMend")

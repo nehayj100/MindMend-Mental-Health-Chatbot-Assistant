@@ -1,20 +1,31 @@
 Next steps:
+# 1 : add summary prompts
+        # check why response is cming in ""
+# 2 : add good data and re-run + optimize chunk size etc for RAG
 
-# Research on Prompt engineering
-    # doest ALWAYS use the retreived Data
-    # NEVER SPEAKS NEGATIVE
-        # think about a novel solution
-    # calls SOS when needed
-    # suggests links and resources (internal/external)
+# 3 : add actiivties separately and tell the bot to suggest....!!!
 
-# add proper resources on home page!!!
+# 4 : make sure never speaks negative 
 
-# check what is retreived in each question 
+# 5 : Add proper resources on home page!!!
 
+# 6 : get apk
+------
+# evaluation
+    # majority(you, llama, qwen)?
+    # precesion, recall
+    # average time to asnwer - 100 question loop
+    # average 1-1 message delay across conversation!!
 
+# report    
 
+    # impressive analysis
+    # tell how lightRag and GraphRAG failed
+    # tell how you over-delivered compared to the proposal
+    # tell to add your number as rn only 1 nuber access from twillio
+    # tell how you ahve shadowed delays :)
 
-
+# video
 
 -----------------------
 # how to store short term and logn term memory
