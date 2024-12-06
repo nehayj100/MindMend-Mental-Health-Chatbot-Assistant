@@ -308,7 +308,6 @@ def perform_RAG(prompt):
         Now respond with empathy to the user's query based on the instructions above. 
         Just give the response and nothing else. 
         """
-
     output = ollama.generate(model="llama3.2", prompt=final_prompt)
 
     return output.get("response", "No response generated.")
