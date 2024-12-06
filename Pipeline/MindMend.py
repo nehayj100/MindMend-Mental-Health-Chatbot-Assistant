@@ -274,7 +274,8 @@ def perform_RAG(prompt):
     # print("-----------------------------------------------------------------------------------------------")
     
     final_prompt = f"""
-        You are an intelligent assistant specializing in mental health. Below is a user query and additional reference data to help you craft an accurate response. Follow the instructions carefully:
+        You are an intelligent assistant specializing in mental health. Below is a user query and additional reference data to help you craft an accurate response. F
+        ollow the instructions carefully:
 
         ### User Query:
         {prompt}
@@ -285,7 +286,7 @@ def perform_RAG(prompt):
         ### Instructions:
         1. **If the user query is related to mental health:**
         - Refer and Understand to the provided reference data to craft your response. 
-        - When reference data is relevant, Make sure you use examples or summarize it.
+        - If the provided reference data is relevant to the question asked then summarize it in your response.
 
         2. **If the user query is a simple greeting (e.g., 'Hello', 'Hi', 'Good morning'):**
         - This means no help or information is needed
