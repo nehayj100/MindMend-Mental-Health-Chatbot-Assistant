@@ -18,7 +18,10 @@ In the USA, nearly 57% of individuals experience mental health issues at some po
 - Enable the chatbot to summarize conversations and create notes that are automatically sent to the doctor via email once chat ends
 - Maintain context in a single chat and also across different chats.
 
-## Model used: Llama 3.2: 3B model
+## Technical details
+Large Language Model used: Llama 3.2: 3B model
+Calling API: Twillio
+Email Protocol: SMTP
 
 ## Using the bot:
 
