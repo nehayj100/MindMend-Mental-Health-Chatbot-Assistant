@@ -9,6 +9,7 @@ mental health chatbot that assists users needing therapy for mental well-being.
 
 In the USA, nearly 57% of individuals experience mental health issues at some point in their lives. Stigma and fear often prevent open discussions about these challenges, leading to reluctance in seeking therapy. MindMend addresses the critical issue of therapist unavailability by offering a continuous conversational support system that aligns with the guidelines and thinking processes of individual therapists. This way, users can access support whenever needed.
 
+<img width="563" alt="image" src="https://github.com/user-attachments/assets/3c5f241b-494b-4dcb-8697-f25c76b2a243">
 
 ## Project Features
 
@@ -38,4 +39,15 @@ pip install -r requirements.txt
 ```bash
     streamlit run MindMend.py
 ```
+
+Demo:
+
+<img width="385" alt="image" src="https://github.com/user-attachments/assets/8b6dcf88-12dc-46cf-b80b-dc9d8c77086a">
+
+<img width="383" alt="image" src="https://github.com/user-attachments/assets/0cba0870-7c99-45f5-9045-254a63cb3393">
+
+<img width="417" alt="image" src="https://github.com/user-attachments/assets/198ce86a-0472-49f7-870f-d6f3e4062e06">
+
+
+
 
