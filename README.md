@@ -28,11 +28,11 @@ In the USA, nearly 57% of individuals experience mental health issues at some po
      cd Pipeline
      ```
 - Install required libraries:  
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+pip install -r requirements.txt
+```
 - Run the application to land on UI
 ```bash
     streamlit run MindMend.py
-    ```
+
 
