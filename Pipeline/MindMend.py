@@ -285,7 +285,7 @@ def perform_RAG(prompt):
         ### Instructions:
         1. **If the user query is related to mental health:**
         - Refer and Understand to the provided reference data to craft your response. 
-        - Make sure you use examples or insights from the data when relevant.
+        - When reference data is relevant, Make sure you use examples or summarize it.
 
         2. **If the user query is a simple greeting (e.g., 'Hello', 'Hi', 'Good morning'):**
         - This means no help or information is needed
@@ -305,7 +305,7 @@ def perform_RAG(prompt):
         **Response:** It's normal to feel anxious occasionally, but persistent anxiety might require coping strategies. For example, the reference data mentions [specific example from combined_data].
 
         Now respond with empathy to the user's query based on the instructions above. 
-        Just give the response and nothing else. Be detailed but not too long.
+        Just give the response and nothing else. 
         """
 
     output = ollama.generate(model="llama3.2", prompt=final_prompt)
