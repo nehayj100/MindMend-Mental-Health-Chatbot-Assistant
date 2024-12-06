@@ -209,7 +209,7 @@ def load_documents():
 # Split documents into chunks
 def split_text(documents):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 500,
+        chunk_size = 700,
         chunk_overlap = 200,
         length_function=len,
         add_start_index=True,
@@ -283,14 +283,15 @@ def perform_RAG(prompt):
         {combined_data}
 
         ### Instructions:
-        1. **If the user query is a simple greeting (e.g., 'Hello', 'Hi', 'Good morning'):**
+        1. **If the user query is related to mental health:**
+        - Refer and Understand to the provided reference data to craft your response. 
+        - Make sure you use examples or insights from the data when relevant.
+
+        2. **If the user query is a simple greeting (e.g., 'Hello', 'Hi', 'Good morning'):**
         - This means no help or information is needed
         - So respond with a simple greeting in return (e.g., "Hello! How can I assist you today?"). 
         - Do NOT refer to the reference data for greetings or overanalyze the user's intent.
-
-        2. **If the user query is related to mental health:**
-        - Refer and Understand to the provided reference data to craft your response. 
-        - Use examples or insights from the data when relevant.
+        
         
         3. **If the user query is unrelated to mental health or cannot be answered using the reference data:**
         - Respond independently with no reference from given data while maintaining professionalism and empathy.
@@ -303,7 +304,8 @@ def perform_RAG(prompt):
         **User Query:** "I'm feeling anxious all the time."  
         **Response:** It's normal to feel anxious occasionally, but persistent anxiety might require coping strategies. For example, the reference data mentions [specific example from combined_data].
 
-        Now respond in short to the user's query based on the instructions above. Just give the response and nothing else.
+        Now respond with empathy to the user's query based on the instructions above. 
+        Just give the response and nothing else. Be detailed but not too long.
         """
 
     output = ollama.generate(model="llama3.2", prompt=final_prompt)
