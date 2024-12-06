@@ -23,10 +23,10 @@ In the USA, nearly 57% of individuals experience mental health issues at some po
 ## Using the bot:
 
 - Clone the repository:  
-     ```bash
-     git clone https://github.com/nehayj100/MindMend-Mental-Health-Chatbot-Assistant
-     cd Pipeline
-     ```
+```bash
+git clone https://github.com/nehayj100/MindMend-Mental-Health-Chatbot-Assistant
+cd Pipeline
+```
 - Install required libraries:  
 ```bash
 pip install -r requirements.txt
@@ -34,5 +34,5 @@ pip install -r requirements.txt
 - Run the application to land on UI
 ```bash
     streamlit run MindMend.py
-
+```
 
