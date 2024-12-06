@@ -9,7 +9,8 @@ mental health chatbot that assists users needing therapy for mental well-being.
 
 In the USA, nearly 57% of individuals experience mental health issues at some point in their lives. Stigma and fear often prevent open discussions about these challenges, leading to reluctance in seeking therapy. MindMend addresses the critical issue of therapist unavailability by offering a continuous conversational support system that aligns with the guidelines and thinking processes of individual therapists. This way, users can access support whenever needed.
 
-<img width="563" alt="image" src="https://github.com/user-attachments/assets/3c5f241b-494b-4dcb-8697-f25c76b2a243">
+<img width="989" alt="image" src="https://github.com/user-attachments/assets/55076060-5811-4291-9d36-cae517d74e94">
+
 
 ## Project Features
 
