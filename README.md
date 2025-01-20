@@ -27,7 +27,11 @@ Email Protocol: SMTP
 
 ## Demo
 
+- Running the application:
 https://www.youtube.com/watch?v=oY5V90xb_kY&t=125s
+
+- Setting keys and passwords:
+
 
 ## Using the bot:
 
