@@ -30,15 +30,17 @@ Email Protocol: SMTP
 - Clone the repository:  
 ```bash
 git clone https://github.com/nehayj100/MindMend-Mental-Health-Chatbot-Assistant
+cd MindMend-Mental-Health-Chatbot-Assistant
 cd Pipeline
 ```
 - Install required libraries:  
 ```bash
 pip install -r requirements.txt
 ```
+- Now put your personal email, twillio keys/passwords in the confidential folder as explained in the demo (this is important to run the application).
 - Run the application to land on UI
 ```bash
-    streamlit run MindMend.py
+streamlit run MindMend.py
 ```
 
 Demo:
