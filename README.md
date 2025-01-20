@@ -31,7 +31,7 @@ Email Protocol: SMTP
 https://www.youtube.com/watch?v=oY5V90xb_kY&t=125s
 
 - Setting keys and passwords:
-
+https://youtu.be/0XMVssyLiIQ
 
 ## Using the bot:
 
