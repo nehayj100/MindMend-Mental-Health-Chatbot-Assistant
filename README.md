@@ -25,6 +25,10 @@ Large Language Model used: Llama 3.2: 3B model
 Calling API: Twillio
 Email Protocol: SMTP
 
+## Demo
+
+https://www.youtube.com/watch?v=oY5V90xb_kY&t=125s
+
 ## Using the bot:
 
 - Clone the repository:  
